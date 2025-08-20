@@ -30,7 +30,13 @@ async function writeToFs(data) {
 }
 
 function isNetlify() {
-  return process.env.NETLIFY === "true" || !!process.env.DEPLOY_ID;
+  return Boolean(
+    process.env.NETLIFY ||
+      process.env.DEPLOY_ID ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.LAMBDA_TASK_ROOT ||
+      process.env.AWS_REGION
+  );
 }
 
 async function readData() {
