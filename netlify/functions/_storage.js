@@ -1,6 +1,13 @@
 const fs = require("fs");
 const path = require("path");
-const { getStore } = require("@netlify/blobs");
+// @netlify/blobs — ESM‑only. В среде функций (CJS) подключаем через динамический import
+let _blobsMod = null;
+async function getStoreAsync() {
+  if (!_blobsMod) {
+    _blobsMod = await import("@netlify/blobs");
+  }
+  return _blobsMod.getStore;
+}
 
 const FILE_DIR = path.resolve(process.cwd(), ".data");
 const FILE_PATH = path.join(FILE_DIR, "codes.json");
@@ -29,6 +36,7 @@ function isNetlify() {
 async function readData() {
   // On Netlify: use Blobs only (filesystem is read-only)
   if (isNetlify()) {
+    const getStore = await getStoreAsync();
     const store = getStore({ name: "prigodno-codes" });
     const json = await store
       .get("codes.json", { type: "json" })
@@ -37,6 +45,7 @@ async function readData() {
   }
   // Local dev: try blobs first, then fallback to filesystem
   try {
+    const getStore = await getStoreAsync();
     const store = getStore({ name: "prigodno-codes" });
     const json = await store.get("codes.json", { type: "json" });
     if (json && typeof json === "object" && Array.isArray(json.codes))
@@ -47,11 +56,13 @@ async function readData() {
 
 async function writeData(next) {
   if (isNetlify()) {
+    const getStore = await getStoreAsync();
     const store = getStore({ name: "prigodno-codes" });
     await store.setJSON("codes.json", next); // throw if fails to surface error in logs
     return;
   }
   try {
+    const getStore = await getStoreAsync();
     const store = getStore({ name: "prigodno-codes" });
     await store.setJSON("codes.json", next);
   } catch {
