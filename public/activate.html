@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Активация промо-кода</title>
+	<style>
+		body {
+			font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+			margin: 24px;
+		}
+
+		.wrap {
+			max-width: 600px;
+			margin: 0 auto;
+		}
+
+		h1 {
+			margin-bottom: 8px;
+		}
+
+		input,
+		button {
+			font-size: 16px;
+		}
+
+		.card {
+			border: 1px solid #eee;
+			border-radius: 10px;
+			padding: 16px;
+		}
+
+		.muted {
+			color: #666;
+		}
+
+		.ok {
+			color: #0a0;
+		}
+
+		.err {
+			color: #c00;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="wrap">
+		<h1>Активация промо-кода</h1>
+		<div class="card">
+			<p class="muted">Введите код. Для теста — без почты, код просто помечается как использованный.</p>
+			<input id="code" type="text" placeholder="Промо-код" style="width: 100%; padding: 10px" />
+			<button id="submit" style="margin-top: 12px">Активировать</button>
+			<div id="status" style="margin-top: 8px" class="muted"></div>
+		</div>
+		<p style="margin-top: 16px"><a href="/">← Назад в CRM</a></p>
+	</div>
+	<script>
+		const api = (path, options = {}) => fetch(`/api/${path}`, { headers: { 'Content-Type': 'application/json' }, ...options }).then(r => r.json());
+		document.getElementById('submit').onclick = async () => {
+			const code = (document.getElementById('code').value || '').trim();
+			if (!code) return;
+			document.getElementById('status').textContent = 'Проверка…';
+			const res = await api('redeem', { method: 'POST', body: JSON.stringify({ code, usedBy: 'site-user' }) });
+			if (res.error) {
+				document.getElementById('status').textContent = res.error;
+				document.getElementById('status').className = 'err';
+			} else {
+				document.getElementById('status').textContent = 'Код активирован';
+				document.getElementById('status').className = 'ok';
+			}
+		};
+	</script>
+</body>
+
+</html>

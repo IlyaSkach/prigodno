@@ -1,0 +1,23 @@
+{
+  "name": "prigodnocrm",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'No build step'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@netlify/blobs": "^10.0.8",
+    "dotenv": "^17.2.1",
+    "nanoid": "^5.1.5"
+  },
+  "devDependencies": {
+    "netlify-cli": "^23.1.4"
+  }
+}

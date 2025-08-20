@@ -1,0 +1,23 @@
+[build]
+  base = "."
+  publish = "public"
+  functions = "netlify/functions"
+
+[dev]
+  command = "" # static
+  port = 8888
+  publish = "public"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+
