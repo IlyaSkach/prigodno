@@ -1,7 +1,13 @@
 const { readData, writeData } = require("./_storage");
-const { customAlphabet } = require("nanoid");
-
-const nano = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 10);
+// nanoid — ESM‑only. Загружаем динамически внутри CJS функции
+let __nano = null;
+async function getNano() {
+  if (!__nano) {
+    const { customAlphabet } = await import("nanoid");
+    __nano = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 10);
+  }
+  return __nano;
+}
 
 async function readCodes() {
   return readData();
@@ -23,6 +29,7 @@ exports.handler = async (event) => {
 
     const newCodes = [];
     while (newCodes.length < safeCount) {
+      const nano = await getNano();
       let code = nano();
       if (prefixTrim) code = `${prefixTrim}-${code}`;
       if (!existing.has(code)) {
