@@ -3,6 +3,11 @@
   publish = "public"
   functions = "netlify/functions"
 
+[functions]
+  # Упаковываем зависимости как внешние, чтобы dynamic import работал в лямбде
+  node_bundler = "zisi"
+  external_node_modules = ["@netlify/blobs", "nanoid"]
+
 [dev]
   command = "" # static
   port = 8888
