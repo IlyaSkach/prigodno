@@ -43,7 +43,10 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers: corsHeaders(),
-      body: JSON.stringify({ error: "failed_to_generate" }),
+      body: JSON.stringify({
+        error: "failed_to_generate",
+        details: String(e && e.message ? e.message : e),
+      }),
     };
   }
 };

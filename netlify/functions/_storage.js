@@ -22,20 +22,35 @@ async function writeToFs(data) {
   fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), "utf8");
 }
 
+function isNetlify() {
+  return process.env.NETLIFY === "true" || !!process.env.DEPLOY_ID;
+}
+
 async function readData() {
-  // Try Netlify Blobs first; fall back to filesystem locally
+  // On Netlify: use Blobs only (filesystem is read-only)
+  if (isNetlify()) {
+    const store = getStore({ name: "prigodno-codes" });
+    const json = await store
+      .get("codes.json", { type: "json" })
+      .catch(() => null);
+    return json && Array.isArray(json.codes) ? json : { codes: [] };
+  }
+  // Local dev: try blobs first, then fallback to filesystem
   try {
     const store = getStore({ name: "prigodno-codes" });
     const json = await store.get("codes.json", { type: "json" });
     if (json && typeof json === "object" && Array.isArray(json.codes))
       return json;
-    return { codes: [] };
-  } catch {
-    return readFromFs();
-  }
+  } catch {}
+  return readFromFs();
 }
 
 async function writeData(next) {
+  if (isNetlify()) {
+    const store = getStore({ name: "prigodno-codes" });
+    await store.setJSON("codes.json", next); // throw if fails to surface error in logs
+    return;
+  }
   try {
     const store = getStore({ name: "prigodno-codes" });
     await store.setJSON("codes.json", next);
