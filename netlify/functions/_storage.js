@@ -9,6 +9,16 @@ async function getStoreAsync() {
   return _blobsMod.getStore;
 }
 
+async function createStore(name) {
+  const getStore = await getStoreAsync();
+  const manualSiteID = process.env.BLOBS_SITE_ID;
+  const manualToken = process.env.BLOBS_TOKEN;
+  if (manualSiteID && manualToken) {
+    return getStore({ name, siteID: manualSiteID, token: manualToken });
+  }
+  return getStore({ name });
+}
+
 const FILE_DIR = path.resolve(process.cwd(), ".data");
 const FILE_PATH = path.join(FILE_DIR, "codes.json");
 
@@ -42,8 +52,7 @@ function isNetlify() {
 async function readData() {
   // On Netlify: use Blobs only (filesystem is read-only)
   if (isNetlify()) {
-    const getStore = await getStoreAsync();
-    const store = getStore({ name: "prigodno-codes" });
+    const store = await createStore("prigodno-codes");
     const json = await store
       .get("codes.json", { type: "json" })
       .catch(() => null);
@@ -51,8 +60,7 @@ async function readData() {
   }
   // Local dev: try blobs first, then fallback to filesystem
   try {
-    const getStore = await getStoreAsync();
-    const store = getStore({ name: "prigodno-codes" });
+    const store = await createStore("prigodno-codes");
     const json = await store.get("codes.json", { type: "json" });
     if (json && typeof json === "object" && Array.isArray(json.codes))
       return json;
@@ -62,14 +70,12 @@ async function readData() {
 
 async function writeData(next) {
   if (isNetlify()) {
-    const getStore = await getStoreAsync();
-    const store = getStore({ name: "prigodno-codes" });
+    const store = await createStore("prigodno-codes");
     await store.setJSON("codes.json", next); // throw if fails to surface error in logs
     return;
   }
   try {
-    const getStore = await getStoreAsync();
-    const store = getStore({ name: "prigodno-codes" });
+    const store = await createStore("prigodno-codes");
     await store.setJSON("codes.json", next);
   } catch {
     await writeToFs(next);
