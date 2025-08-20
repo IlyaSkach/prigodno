@@ -4,9 +4,8 @@
   functions = "netlify/functions"
 
 [functions]
-  # Упаковываем зависимости как внешние, чтобы dynamic import работал в лямбде
-  node_bundler = "zisi"
-  external_node_modules = ["@netlify/blobs", "nanoid"]
+  # Используем esbuild, чтобы зашить ESM-зависимости (@netlify/blobs, nanoid) в бандл
+  node_bundler = "esbuild"
 
 [dev]
   command = "" # static
